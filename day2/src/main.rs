@@ -42,23 +42,27 @@ impl From<&str> for Command {
 fn calculate_position(commands: &[String]) -> i32 {
     let commands: Vec<Command> = commands.iter().map(|command| Command::from(command.as_str())).collect();
     let mut horizontal = 0;
-    let mut vertical = 0;
+    let mut depth = 0;
+    let mut aim = 0;
 
     for command in commands {
         match command.direction {
-            Direction::Forward => horizontal += command.value,
-            Direction::Down => vertical += command.value,
-            Direction::Up => vertical -= command.value
+            Direction::Forward => {
+                horizontal += command.value;
+                depth += aim * command.value;
+            },
+            Direction::Down => aim += command.value,
+            Direction::Up => aim -= command.value
         }
     }
 
-    horizontal * vertical
+    horizontal * depth
 }
 
 fn main() {}
 
 #[test]
-fn check_part_1_example() {
+fn check_part_2_example() {
     let input = [
         "forward 5",
         "down 5",
@@ -67,11 +71,11 @@ fn check_part_1_example() {
         "down 8",
         "forward 2",
     ].map(|s| s.to_string());
-    assert_eq!(calculate_position(&input), 150);
+    assert_eq!(calculate_position(&input), 900);
 }
 
 #[test]
 fn check_part_1() {
     let input = input::read_lines("input.txt");
-    assert_eq!(calculate_position(&input), 1962940);
+    assert_eq!(calculate_position(&input), 1813664422);
 }
