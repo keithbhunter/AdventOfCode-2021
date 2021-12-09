@@ -1,5 +1,7 @@
 use input;
 
+fn main() {}
+
 fn number_of_increases(measurements: &[i32]) -> i32 {
     let mut increases = 0i32;
     for i in 0..measurements.len()-3 {

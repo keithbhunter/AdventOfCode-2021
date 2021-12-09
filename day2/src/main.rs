@@ -72,6 +72,6 @@ fn check_part_1_example() {
 
 #[test]
 fn check_part_1() {
-    let input = input::read_string_lines("input.txt");
+    let input = input::read_lines("input.txt");
     assert_eq!(calculate_position(&input), 1962940);
 }
