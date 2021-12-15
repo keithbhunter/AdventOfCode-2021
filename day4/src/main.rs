@@ -25,19 +25,15 @@ impl Board {
         if rows.len() != 5 {
             return None;
         }
-    
         let mut squares: [[Square; 5]; 5] = [[new_square(0); 5]; 5];
-    
         for (row, row_values) in rows.iter().enumerate() {
             if row_values.len() != 5 {
                 return None;
             }
-    
             for (col, col_value) in row_values.iter().enumerate() {
                 squares[row][col] = new_square(*col_value);
             }
         }
-    
         Some(Board { squares })
     }
 
@@ -53,14 +49,21 @@ impl Board {
 
     fn has_bingo(&self) -> bool {
         for row in 0..self.squares.len() {
-            if self.squares[row].iter().fold(true, |acc, sq| acc && sq.marked) {
-                return true
+            if self.squares[row]
+                .iter()
+                .fold(true, |acc, sq| acc && sq.marked)
+            {
+                return true;
             }
         }
 
         for col in 0..self.squares.len() {
-            if self.squares.iter().fold(true, |acc, row| acc && row[col].marked) {
-                return true
+            if self
+                .squares
+                .iter()
+                .fold(true, |acc, row| acc && row[col].marked)
+            {
+                return true;
             }
         }
 
@@ -84,7 +87,11 @@ impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for row in self.squares {
             for square in row {
-                write!(f, "{} ", square.number);
+                if square.marked {
+                    write!(f, "X ");
+                } else {
+                    write!(f, "{} ", square.number);
+                }
             }
             write!(f, "\n");
         }
@@ -115,7 +122,9 @@ where
             }
         }
 
-        let board_lines: Vec<&String> = borrowed_iter.take_while(|line| line.as_str() != "").collect();
+        let board_lines: Vec<&String> = borrowed_iter
+            .take_while(|line| line.as_str() != "")
+            .collect();
         let board_numbers: Vec<Vec<usize>> = board_lines
             .iter()
             .map(|line| {
@@ -145,13 +154,42 @@ fn play_bingo(numbers: &[usize], boards: &mut [Board]) -> usize {
     panic!("should've found a board");
 }
 
+fn play_bingo_until_last_board(numbers: &[usize], boards: Vec<Board>) -> usize {
+    let mut remaining = boards;
+
+    for number in numbers {
+        remaining = remaining
+            .into_iter()
+            .filter(|board| !board.has_bingo())
+            .collect();
+
+        for board in remaining.iter_mut() {
+            board.mark(*number);
+        }
+
+        if remaining.len() == 1 && remaining.get(0).unwrap().has_bingo() {
+            return remaining.get(0).unwrap().sum_of_unmarked_squares() * number;
+        }
+    }
+    panic!("should've found a board");
+}
+
 fn main() {
     let (numbers, mut boards) = build_bingo_board("input.txt");
-    println!("result {}", play_bingo(&numbers, &mut *boards))
+    println!("part 1 {}", play_bingo(&numbers, &mut *boards));
+
+    let (numbers, boards) = build_bingo_board("input.txt");
+    println!("part 2 {}", play_bingo_until_last_board(&numbers, boards));
 }
 
 #[test]
 fn check_part_1_example() {
     let (numbers, mut boards) = build_bingo_board("example.txt");
     assert_eq!(play_bingo(&numbers, &mut *boards), 4512);
+}
+
+#[test]
+fn check_part_2_example() {
+    let (numbers, boards) = build_bingo_board("example.txt");
+    assert_eq!(play_bingo_until_last_board(&numbers, boards), 1924);
 }
